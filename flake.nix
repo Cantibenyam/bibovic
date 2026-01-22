@@ -9,7 +9,7 @@
   outputs = { self, nixpkgs, ... }@inputs: {
     # Replace 'my-hostname' with your actual hostname 
     # (found inside configuration.nix under networking.hostName)
-    nixosConfigurations.my-hostname = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.nyam = nixpkgs.lib.nixosSystem {
       specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
