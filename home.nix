@@ -1,31 +1,37 @@
 { config, pkgs, ... }:
 
 {
-  # Replace 'your-username'
   home.username = "nyam";
   home.homeDirectory = "/home/nyam";
 
-  # This value determines the Home Manager release that your configuration is
-  # compatible with. This helps avoid breakage when a new Home Manager release
-  # introduces backwards incompatible changes.
-  home.stateVersion = "23.11"; 
+  # Set this to the version you installed, or 23.11/24.05 for now
+  home.stateVersion = "24.05"; 
 
-  # Packages to install for this user (The Ricing Starter Pack)
+  # The Ricing Starter Pack
   home.packages = with pkgs; [
-    kitty        # Terminal
-    waybar       # The top bar
-    swww         # Wallpaper daemon
-    rofi-wayland # App launcher
-    libnotify    # Notification library
-    dunst        # Notification daemon
-    networkmanagerapplet # Wi-fi tray icon
+    kitty
+    waybar
+    swww
+    rofi-wayland
+    dunst
+    libnotify
   ];
 
   # Enable Home Manager and Git
   programs.home-manager.enable = true;
+  
   programs.git = {
     enable = true;
-    userName = "Imangali Duisebayev";
-    userEmail = "nyamthenyam@gmail.com";
+    userName = "nyam";
+    userEmail = "your-email@example.com"; # Change this later!
+  };
+
+  # Let's add a basic Kitty config while we're here
+  programs.kitty = {
+    enable = true;
+    settings = {
+      background_opacity = "0.8";
+      confirm_os_window_close = 0;
+    };
   };
 }
