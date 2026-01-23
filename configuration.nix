@@ -122,6 +122,7 @@
   rofi  # An application launcher
   mako
   code-cursor
+  home-manager
 ];
 
   # Some programs need SUID wrappers, can be configured further or are
