@@ -19,7 +19,7 @@
     hyprpaper
   ];
 
-  home.file.".config/hypr/wallpaper.jpg".source = ./wp/images.jpg;
+  home.file.".config/hypr/wallpaper.jpg".source = ./wp/images;
   wayland.windowManager.hyprland.settings = {
     exec-once = [
      
@@ -33,14 +33,14 @@
     
     # 1. Load the image into memory (REQUIRED)
     preload = [
-      "./wp/images.jpg"
+      "./wp/images"
     ];
 
     # 2. Apply the image to monitors
     # Syntax: "monitor, /path/to/image"
     # Leaving the monitor empty (the comma is vital) applies it to ALL monitors
     wallpaper = [
-      ",./wp/images.jpg"
+      ",./wp/images"
     ];
   };
   };
