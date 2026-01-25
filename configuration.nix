@@ -120,7 +120,7 @@
   minecraftServers.vanilla-1-9
   vivaldi
   waybar        # The status bar at the top
-  swww          # For wallpapers
+          # For wallpapers
   kitty         # A fast Wayland terminal
   rofi  # An application launcher
   mako
@@ -137,6 +137,9 @@
   nodejs_20
   python3
   cargo
+  gemini-cli
+  xfce.thunar
+  hyprpaper
 ];
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono

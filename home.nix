@@ -16,10 +16,37 @@
     dunst
     libnotify
     helix
+    hyprpaper
   ];
 
+  home.file.".config/hypr/wallpaper.jpg".source = ./wp/images.jpg;
+  wayland.windowManager.hyprland.settings = {
+    exec-once = [
+     
+    ];
+  };
+  services.hyprpaper = {
+  enable = true;
+  settings = {
+    ipc = "on";
+    splash = true;
+    
+    # 1. Load the image into memory (REQUIRED)
+    preload = [
+      "./wp/images.jpg"
+    ];
+
+    # 2. Apply the image to monitors
+    # Syntax: "monitor, /path/to/image"
+    # Leaving the monitor empty (the comma is vital) applies it to ALL monitors
+    wallpaper = [
+      ",./wp/images.jpg"
+    ];
+  };
+  };
   programs.home-manager.enable = true;
-  
+  programs.gemini-cli.enable = true; 
+  programs.gemini-cli.defaultModel = "gemini-2.5-pro";
   programs.git = {
     enable = true;
     extraConfig = {
@@ -38,10 +65,13 @@
     };
   };
 
+
+
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
     settings = {
+      
       # --- Appearance ---
       general = {
         gaps_in = 2;
@@ -69,6 +99,7 @@
           render_power = 3;
           color = "rgba(1a1a1aee)";
         };
+
       };
 
       animations = {
