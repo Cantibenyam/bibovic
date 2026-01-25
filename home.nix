@@ -33,7 +33,7 @@
   programs.kitty = {
     enable = true;
     settings = {
-      background_opacity = "0.8";
+      background_opacity = "0.3";
       confirm_os_window_close = 0;
     };
   };
@@ -44,15 +44,18 @@
     settings = {
       # --- Appearance ---
       general = {
-        gaps_in = 5;
-        gaps_out = 15;
+        gaps_in = 2;
+        gaps_out = 6;
         border_size = 2;
         # Simplified color format to avoid syntax errors
         "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
         "col.inactive_border" = "rgba(595959aa)";
-        layout = "dwindle";
+        layout = "master";
       };
-
+      master = {
+        mfact = 0.7;
+        orientation = "center";
+      };
       decoration = {
         rounding = 10;
         blur = {
@@ -93,6 +96,7 @@
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"
         "$mainMod, down, movefocus, d"
+        "$mainMod, RETURN, layoutmsg, swapwithmaster"
       ] ++ (
         builtins.concatLists (builtins.genList (
             i: let

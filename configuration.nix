@@ -9,6 +9,9 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  services.blueman.enable = true;
   programs.hyprland.enable = true;
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
@@ -123,8 +126,21 @@
   mako
   code-cursor
   home-manager
+  helix
+  postman
+  discord
+  neovim
+  gcc
+  ripgrep
+  fd
+  unzip
+  nodejs_20
+  python3
+  cargo
 ];
-
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
