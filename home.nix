@@ -1,12 +1,14 @@
 { config, pkgs, ... }:
 
+let
+  # FIX: Define the wallpaper path here so Nix handles the absolute path.
+  # Ensure your file is named 'images.jpg' inside the 'wp' folder!
+  wallpaper = ./wp/images.jpg; 
+in
 {
   home.username = "nyam";
   home.homeDirectory = "/home/nyam";
   home.stateVersion = "24.05"; 
-
-  # Force the symlink so Nix stays in control
-  xdg.configFile."hypr/hyprland.conf".force = true;
 
   home.packages = with pkgs; [
     kitty
@@ -19,73 +21,36 @@
     hyprpaper
   ];
 
-  home.file.".config/hypr/wallpaper.jpg".source = ./wp/images;
-  wayland.windowManager.hyprland.settings = {
-    exec-once = [
-     
-    ];
-  };
-  services.hyprpaper = {
-  enable = true;
-  settings = {
-    ipc = "on";
-    splash = true;
-    
-    # 1. Load the image into memory (REQUIRED)
-    preload = [
-      "./wp/images"
-    ];
-
-    # 2. Apply the image to monitors
-    # Syntax: "monitor, /path/to/image"
-    # Leaving the monitor empty (the comma is vital) applies it to ALL monitors
-    wallpaper = [
-      ",./wp/images"
-    ];
-  };
-  };
-  programs.home-manager.enable = true;
-  programs.gemini-cli.enable = true; 
-  programs.gemini-cli.defaultModel = "gemini-2.5-pro";
-  programs.git = {
-    enable = true;
-    extraConfig = {
-      user = {
-        name = "nyam";
-        email = "your-email@example.com";
-      };
-    };
-  };
-
-  programs.kitty = {
-    enable = true;
-    settings = {
-      background_opacity = "0.3";
-      confirm_os_window_close = 0;
-    };
-  };
-
-
-
+  # FIX: Cleaned up duplicate Hyprland config.
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
+    
     settings = {
-      
+      # Monitor Setup (Was missing)
+      monitor = ",preferred,auto,1";
+
+      # Autostart
+      exec-once = [
+        "hyprpaper"
+        "waybar"
+      ];
+
       # --- Appearance ---
       general = {
         gaps_in = 2;
         gaps_out = 6;
         border_size = 2;
-        # Simplified color format to avoid syntax errors
         "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
         "col.inactive_border" = "rgba(595959aa)";
         layout = "master";
       };
+
       master = {
         mfact = 0.7;
         orientation = "center";
       };
+
       decoration = {
         rounding = 10;
         blur = {
@@ -99,7 +64,6 @@
           render_power = 3;
           color = "rgba(1a1a1aee)";
         };
-
       };
 
       animations = {
@@ -115,6 +79,7 @@
       };
 
       "$mainMod" = "SUPER";
+
       bind = [
         "$mainMod, Q, exec, kitty"
         "$mainMod, C, killactive,"
@@ -139,6 +104,44 @@
           )
           9)
       );
+    };
+  };
+
+  services.hyprpaper = {
+    enable = true;
+    settings = {
+      ipc = "on";
+      splash = true;
+      
+      preload = [
+        "${wallpaper}"
+      ];
+
+      wallpaper = [
+        ",${wallpaper}"
+      ];
+    };
+  };
+
+  programs.home-manager.enable = true;
+  programs.gemini-cli.enable = true; 
+  programs.gemini-cli.defaultModel = "gemini-2.5-pro";
+  
+  programs.git = {
+    enable = true;
+    extraConfig = {
+      user = {
+        name = "nyam";
+        email = "your-email@example.com";
+      };
+    };
+  };
+
+  programs.kitty = {
+    enable = true;
+    settings = {
+      background_opacity = "0.2"; # 0.3 is very hard to see!
+      confirm_os_window_close = 0;
     };
   };
 }
