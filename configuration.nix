@@ -57,6 +57,7 @@
   # Enable the KDE Plasma Desktop Environment.
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
+  services.postgresql.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -67,7 +68,7 @@
   # Configure console keymap
   console.keyMap = "uk";
 
-  # Enable CUPS to print documents.
+  # Enable CUPS to p  ffrint documents.
   services.printing.enable = true;
   services.openssh.enable = true;
   # Enable sound with pipewire.
@@ -85,8 +86,7 @@
     # no need to redefine it in your config for now)
     #media-session.enable = true;
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
+   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -120,7 +120,7 @@
   minecraftServers.vanilla-1-9
   vivaldi
   waybar        # The status bar at the top
-          # For wallpapers
+  pgadmin4-desktopmode          # For wallpapers
   kitty         # A fast Wayland terminal
   rofi  # An application launcher
   mako
@@ -138,8 +138,11 @@
   python3
   cargo
   gemini-cli
-  xfce.thunar
+  pkgs.thunar
   hyprpaper
+  postgresql
+  grimblast
+  zathura
 ];
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono

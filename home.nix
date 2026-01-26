@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  # FIX: Define the wallpaper path here so Nix handles the absolute path.
+  # Define the wallpaper path here so Nix handles the absolute path.
   # Ensure your file is named 'images.jpg' inside the 'wp' folder!
   wallpaper = ./wp/images.jpg; 
 in
@@ -21,14 +21,14 @@ in
     hyprpaper
   ];
 
-  # FIX: Cleaned up duplicate Hyprland config.
+   
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
     
     settings = {
       # Monitor Setup (Was missing)
-      monitor = ",preferred,auto,1";
+      monitor = ", 2560x1440@144, auto, 1";
 
       # Autostart
       exec-once = [
@@ -48,7 +48,7 @@ in
 
       master = {
         mfact = 0.7;
-        orientation = "center";
+        orientation = "left";
       };
 
       decoration = {
@@ -93,9 +93,10 @@ in
         "$mainMod, up, movefocus, u"
         "$mainMod, down, movefocus, d"
         "$mainMod, RETURN, layoutmsg, swapwithmaster"
+        ", Print, exec, grimblast copy area"
       ] ++ (
         builtins.concatLists (builtins.genList (
-            i: let
+            i: let 
               ws = i + 1;
             in [
               "$mainMod, code:1${toString i}, workspace, ${toString ws}"
