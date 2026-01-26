@@ -31,7 +31,7 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-
+  networking.nameservers = ["94.140.14.14" "94.140.15.15"];
   # Set your time zone.
   time.timeZone = "America/Phoenix";
   nix.settings.experimental-features = ["nix-command" "flakes"];
@@ -99,7 +99,9 @@
     #  thunderbird
     ];
   };
+  
 
+  security.pam.services.hyprlock = {}; 
   # Install firefox.
   programs.firefox.enable = true;
 

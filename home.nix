@@ -19,6 +19,7 @@ in
     libnotify
     helix
     hyprpaper
+    wireplumber
   ];
   
   home.sessionPath = [
@@ -76,6 +77,11 @@ in
       };
 
       "$mainMod" = "SUPER";
+      
+      binde = [
+        ", F2, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"
+        ", F3, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"
+      ];
 
       bind = [
         "$mainMod, Q, exec, kitty"
@@ -131,18 +137,53 @@ in
   
   programs.git = {
     enable = true;
-    extraConfig = {
+    settings = {
       user = {
         name = "nyam";
         email = "your-email@example.com";
       };
     };
   };
+  
+  programs.hyprlock = {
+    enable = true;
+    settings = {
+      general = {
+        no_fade_in = false;
+        grace = 0;
+        disable_loading_bar = true;
+      };
+
+      background = [
+        {
+          path = "screenshot";
+          blur_passes = 3;
+          blur_size = 8;
+        }
+      ];
+
+      input-field = [
+        {
+          size = "200, 50";
+          position = "0, -80";
+          monitor = "";
+          dots_center = true;
+          fade_on_empty = false;
+          font_color = "rgb(202, 211, 245)";
+          inner_color = "rgb(91, 96, 120)";
+          outer_color = "rgb(24, 25, 38)";
+          outline_thickness = 5;
+          placeholder_text = "<i>...your secret...</i>";
+          shadow_passes = 2;
+        }
+      ];
+    };
+  };
 
   programs.kitty = {
     enable = true;
     settings = {
-      background_opacity = "0.2"; # 0.3 is very hard to see!
+      background_opacity = "0.5"; # 0.3 is very hard to see!
       confirm_os_window_close = 0;
     };
   };
