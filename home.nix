@@ -3,7 +3,7 @@
 let
   # Define the wallpaper path here so Nix handles the absolute path.
   # Ensure your file is named 'images.jpg' inside the 'wp' folder!
-  wallpaper = ./wp/images.jpg; 
+  wallpaper = ./wp/eientei_large.jpg; 
 in
 {
   home.username = "nyam";
@@ -20,7 +20,10 @@ in
     helix
     hyprpaper
   ];
-
+  
+  home.sessionPath = [
+    "$HOME/.npm-global/bin"
+  ];
    
   wayland.windowManager.hyprland = {
     enable = true;
@@ -29,12 +32,6 @@ in
     settings = {
       # Monitor Setup (Was missing)
       monitor = ", 2560x1440@144, auto, 1";
-
-      # Autostart
-      exec-once = [
-        "hyprpaper"
-        "waybar"
-      ];
 
       # --- Appearance ---
       general = {
@@ -112,14 +109,18 @@ in
     enable = true;
     settings = {
       ipc = "on";
-      splash = true;
+      splash = false;
       
       preload = [
         "${wallpaper}"
       ];
 
       wallpaper = [
-        ",${wallpaper}"
+        {
+        monitor = "eDP-1";
+        path = "${wallpaper}";
+        fit_mode = "cover";
+        }
       ];
     };
   };
