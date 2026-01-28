@@ -4,7 +4,7 @@
   inputs = {
     # Unstable for your System/Hyprland (Bleeding Edge)
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
+    #stylix.url = "github:danth/stylix";
     # Stable for Prisma (Pins this to Prisma v5 to match your project)
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
     
@@ -33,7 +33,21 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.nyam = import ./home.nix;
+          #home-manager.sharedModules = [stylix.homeManagerModules.stylix];
         }
+
+        ({ pkgs, ... }: {
+          nixpkgs.overlays = [
+            (final: prev: {
+              bibtool = prev.bibtool.overrideAttrs (oldAttrs: {
+                # Force GCC to relax strictness for this specific package
+                env = (oldAttrs.env or {}) // {
+                  NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+                };
+              });
+            })
+          ];
+        })
       ];
     };
 
