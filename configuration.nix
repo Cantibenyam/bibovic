@@ -160,6 +160,7 @@
   postgresql
   grimblast
   zathura
+  xclip
 ];
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono

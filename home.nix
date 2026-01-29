@@ -1,9 +1,25 @@
 { config, pkgs, ... }:
 
 let
-  # Define the wallpaper path here so Nix handles the absolute path.
-  # Ensure your file is named 'images.jpg' inside the 'wp' folder!
-  wallpaper = ./wp/koishi.jpg; 
+  wallpaper = ./wp/koishi.jpg;
+
+  palette = {
+    bg      = "#0f111a";
+    bg_rgba = "rgba(15,17,26,00)"; # Deepest blue-black (Background)
+    bg_alt  = "#1a1d29";   # Slightly lighter (Panels/Bars)
+    fg      = "#a9b1d6";  
+    fg_rgba = "rgba(169, 177, 214, 00)"; # Pale grey-blue (Text)
+    accent  = "#7aa2f7";   # The glowing blue eye color (Active borders/Highlights)
+    accent2 = "#7dcfff";   # A lighter cyan for gradients
+    muted   = "#565f89";   # Dimmed text/comments
+    red     = "#f7768e";   # Errors/Danger
+    green   = "#9ece6a";   # Success
+  };
+
+  c = hex: builtins.substring 1 6 hex;
+
+
+
 in
 {
   home.username = "nyam";
@@ -21,7 +37,10 @@ in
     hyprpaper
     wireplumber
     zathura
-];
+    playerctl
+
+    nerd-fonts.jetbrains-mono
+    btop];
   
   home.sessionPath = [
     "$HOME/.npm-global/bin"
@@ -42,7 +61,7 @@ in
       };
     };
 
-
+#=============================================ALIASES==========================================================================================================================================
   programs.bash = {
       enable = true;
       enableCompletion = true;
@@ -53,10 +72,11 @@ in
         cat = "bat";
         edit = "nvim ~/dotfiles";
         update = "cd ~/dotfiles && git add . && sudo nixos-rebuild switch --flake . && cd ~";
+        split = "hyprctl dispatch workspace 9 & kitty --class rice-left & kitty --class rice-right &";
 
       };
   };
-    
+ #===================================================================================================================================================================================================   
 
 
   programs.yazi = {
@@ -72,59 +92,71 @@ in
     };
   };
 };
-  
-  #ZATHURA  
+
+
   programs.zathura = {
     enable = true;
     options = {
-    #alpha = "0.8";
-    # Transparency specific settings
     recolor = true;
-    recolor-lightcolor = "rgba(30,30,46,0.3)";
-    recolor-darkcolor = "#cdd6f4";
-    default-bg = "rgba(30,30,46, 0.3)"; 
-    # UI and Behavior
-    statusbar-bg = "rgba(30,30,46,0.3)";
-    statusbar-fg = "#cdd6f4";
+    recolor-lightcolor = "${palette.bg_rgba}";
+    recolor-darkcolor = "${palette.fg}";
+    default-bg = "${palette.bg_rgba}"; 
+    statusbar-bg = "${palette.bg_alt}";
+    statusbar-fg = "${palette.fg}";
     adjust-open = "best-fit";
     guioptions = "none";
   };
 
-  # Translate 'map key command' to key = "command"
-  mappings = {
-    i = "recolor";
-    
-    # Smooth scrolling maps (note the escaped quotes for the command)
-    j = "feedkeys \"<C-Down>\"";
-    k = "feedkeys \"<C-Up>\"";
+    mappings = {
+      i = "recolor";
+      j = "feedkeys \"<C-Down>\"";
+      k = "feedkeys \"<C-Up>\"";
+    };
   };
-  };
-  #stylix.enable = true;
-  #stylix.image = "${wallpaper}";
-  #stylix.targets.zathura.enable = true;
+  
 
   wayland.windowManager.hyprland = {
     enable = true;
     xwayland.enable = true;
 
-     settings = {
+    extraConfig = ''
+      # --- RICE LAYOUT RULES (Forced via extraConfig) ---
+      
+      # LEFT
+      windowrulev2 = float,initialClass:^(rice-left)$
+      windowrulev2 = size 20% 90%,initialClass:^(rice-left)$
+      windowrulev2 = move 1% 5%,initialClass:^(rice-left)$
+      windowrulev2 = opacity 0.8,initialClass:^(rice-left)$
+
+      # RIGHT
+      windowrulev2 = float,class:^(rice-right)$
+      windowrulev2 = size 20% 90%,class:^(rice-right)$
+      windowrulev2 = move 79% 5%,class:^(rice-right)$
+      windowrulev2 = opacity 0.8,class:^(rice-right)$
+    '';
+
+
+    settings = {
+
+
       monitor = ", 2560x1440@144, auto, 1";
       exec-once = [
         "hyprlock"
+        "waybar"
+
       ];
-
-     windowrulev2 = [
-      "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"
-    ];  
-
-
+      windowrulev2 = [
+      "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"];  
       general = {
-        gaps_in = 2;
-        gaps_out = 6;
+        gaps_in = 4;
+        gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        "col.inactive_border" = "rgba(595959aa)";
+        "col.active_border" = "rgb(${c palette.accent}) rgb(${c palette.accent2}) 45deg";
+        "col.inactive_border" = "rgb(${c palette.bg_alt})";
         layout = "master";
+
+        resize_on_border = true;
+        extend_border_grab_area = 15;
       };
 
       master = {
@@ -137,15 +169,14 @@ in
         blur = {
           enabled = true;
           size = 3;
-          passes = 2;
+          passes = 1;
           new_optimizations = true;
         };
         shadow = {
-
           enabled = true;
           range = 4;
           render_power = 3;
-          color = "rgba(f2dfd199)";
+          color = "rgba(000000ee)";
           };
       };
 
@@ -161,6 +192,7 @@ in
         ];
       };
 
+#===================================================================BINDS========================================================================================================================
       "$mainMod" = "SUPER";
       
       binde = [
@@ -182,6 +214,8 @@ in
         "$mainMod, down, movefocus, d"
         "$mainMod, RETURN, layoutmsg, swapwithmaster"
         ", Print, exec, grimblast copy area"
+        "ALT, Tab, cyclenext"
+        "ALT SHIFT, Tab, cyclenext, prev"
       ] ++ (
         builtins.concatLists (builtins.genList (
             i: let 
@@ -195,7 +229,8 @@ in
       );
     };
   };
-
+#================================================================================================================================================================================================
+      
   services.hyprpaper = {
     enable = true;
     settings = {
@@ -237,6 +272,14 @@ in
         no_fade_in = false;
         grace = 0;
         disable_loading_bar = true;
+        hide_cursor = true;
+        ignore_empty_input = true;
+        screencopy_mode = 0;
+        fail_timeout = 0;
+      };
+      
+      animations = {
+          enabled = true;
       };
 
       background = [
@@ -244,24 +287,38 @@ in
           path = "screenshot";
           blur_passes = 3;
           blur_size = 8;
+          brightness = 0.3;
         }
+      ];
+      
+      label = [
+      {
+        text = "$TIME";
+        font_size = 95;
+        position = "0, 300";
+        color = "${palette.fg}";
+      }
       ];
 
       input-field = [
         {
-          size = "200, 50";
+          size = "250, 50";
           position = "0, -80";
           monitor = "";
           dots_center = true;
           fade_on_empty = false;
-          font_color = "rgb(202, 211, 245)";
-          inner_color = "rgb(91, 96, 120)";
-          outer_color = "rgb(24, 25, 38)";
-          outline_thickness = 5;
-          placeholder_text = "<i>...your secret...</i>";
+          hide_input = true;
+          font_color = "rgb(${c palette.fg})";
+          inner_color = "rgb(${c palette.bg})";
+          outer_color = "rgb(${c palette.accent})";
+          outline_thickness = 2;
+          placeholder_text = "<i>...enter the void...</i>";
           shadow_passes = 2;
+          rounding = 10;
         }
       ];
+
+
     };
   };
 
@@ -278,7 +335,8 @@ in
     theme = "Catppuccin-Mocha";
   };
 
-  programs.starship = {
+  programs.starship = 
+{
   enable = true;
   enableBashIntegration = true; # Let's ensure this is ON
   
@@ -343,4 +401,216 @@ in
     };
   };
 };
+
+
+  programs.waybar = {
+    enable = true;
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+        height = 36;
+        spacing = 4;
+        
+        # MARGINS: Top/Left/Right gaps for that "floating" look
+        margin-top = 6;
+        margin-left = 10;
+        margin-right = 10;
+
+        modules-left = [ "hyprland/workspaces" "hyprland/window" ];
+        modules-center = [ "clock" ];
+        modules-right = [ 
+          "group/music"   # <--- The expandable music module
+          "pulseaudio" 
+          "network" 
+          "battery" 
+          "tray" 
+        ];
+
+        # -------------------------------------------------------------------------
+        # MODULE CONFIGURATION
+        # -------------------------------------------------------------------------
+        
+        "hyprland/workspaces" = {
+          disable-scroll = true;
+          all-outputs = true;
+          format = "{icon}";
+          format-icons = {
+            "1" = "一";
+            "2" = "二";
+            "3" = "三";
+            "4" = "四";
+            "5" = "五";
+            "6" = "六";
+            "7" = "七";
+            "8" = "八";
+            "9" = "九";
+            urgent = "";
+            focused = "";
+            default = "";
+          };
+        };
+        
+        "clock" = {
+          # format = "{:%H:%M}  ";
+          format = "{:%I:%M %p} ";
+          tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
+          format-alt = "{:%Y-%m-%d}";
+        };
+
+        # --- EXPANDABLE MUSIC GROUP ---
+        "group/music" = {
+          orientation = "horizontal";
+          drawer = {
+            transition-duration = 500;
+            children-class = "not-power";
+            transition-left-to-right = false;
+          };
+          modules = [
+            "custom/music-icon" # The icon always visible
+            "mpris"             # The player controls (hidden until hovered)
+          ];
+        };
+
+        "custom/music-icon" = {
+          format = " ";
+          tooltip = false;
+        };
+
+        "mpris" = {
+          format = "{player_icon} {dynamic}";
+          format-paused = "{status_icon} <i>{dynamic}</i>";
+          player-icons = {
+            default = "▶";
+            mpv = "🎵";
+          };
+          status-icons = {
+            paused = "⏸";
+          };
+          # ignored-players = ["firefox"]; # Optional: ignore browser audio
+        };
+        
+        "pulseaudio" = {
+          format = "{icon} {volume}%";
+          format-muted = "";
+          format-icons = {
+            default = ["" "" ""];
+          };
+          on-click = "pavucontrol";
+        };
+
+        "network" = {
+          format-wifi = " ";
+          format-ethernet = "";
+          format-disconnected = " ";
+          tooltip-format = "{ifname} via {gwaddr}";
+          tooltip-format-wifi = "{essid} ({signalStrength}%)";
+        };
+
+        "battery" = {
+          states = {
+            warning = 30;
+            critical = 15;
+          };
+          format = "{icon} {capacity}%";
+          format-charging = " {capacity}%";
+          format-icons = ["" "" "" "" ""];
+        };
+
+        "tray" = {
+          icon-size = 21;
+          spacing = 10;
+        };
+      };
+    };
+
+    # -------------------------------------------------------------------------
+    # CSS STYLING (Injecting the 'palette' variables)
+    # -------------------------------------------------------------------------
+   style = ''
+      * {
+        font-family: "JetBrainsMono Nerd Font";
+        font-weight: bold;
+        font-size: 14px;
+        min-height: 0;
+      }
+
+      window#waybar {
+        background: transparent;
+      }
+
+      .modules-left, .modules-center, .modules-right {
+        background: ${palette.bg_alt};
+        border: 1px solid ${palette.fg};
+        border-radius: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      #workspaces button {
+        padding: 0 5px;
+        color: ${palette.muted};
+      }
+
+      #workspaces button.active {
+        color: ${palette.accent};
+      }
+
+      #workspaces button.urgent {
+        color: ${palette.red};
+      }
+
+      #clock,
+      #battery,
+      #cpu,
+      #memory,
+      #disk,
+      #temperature,
+      #backlight,
+      #network,
+      #pulseaudio,
+      #wireplumber,
+      #custom-media,
+      #tray,
+      #mode,
+      #idle_inhibitor,
+      #scratchpad,
+      #mpd {
+        padding: 0 10px;
+        color: ${palette.fg};
+      }
+
+      #custom-music-icon {
+        color: ${palette.accent};
+        padding-right: 10px;
+      }
+      
+      #mpris {
+        color: ${palette.fg};
+        padding: 0 10px;
+        background: ${palette.bg};
+        border-radius: 15px;
+        margin: 3px 0;
+      }
+
+      #battery.charging, #battery.plugged {
+        color: ${palette.green};
+      }
+
+      @keyframes blink {
+        to {
+          background-color: ${palette.red};
+          color: ${palette.bg};
+        }
+      }
+
+      #battery.critical:not(.charging) {
+        color: ${palette.red};
+        animation-name: blink;
+        animation-duration: 0.5s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+    '';  };
  }
