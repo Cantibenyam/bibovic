@@ -5,7 +5,7 @@ let
 
   palette = {
     bg      = "#0f111a";
-    bg_rgba = "rgba(15,17,26,00)"; # Deepest blue-black (Background)
+    bg_rgba = "rgba(15,17,26,55)"; # Deepest blue-black (Background)
     bg_alt  = "#1a1d29";   # Slightly lighter (Panels/Bars)
     fg      = "#a9b1d6";  
     fg_rgba = "rgba(169, 177, 214, 00)"; # Pale grey-blue (Text)
@@ -38,7 +38,7 @@ in
     wireplumber
     zathura
     playerctl
-
+    docker
     nerd-fonts.jetbrains-mono
     btop];
   
