@@ -30,8 +30,7 @@ in
     kitty
     waybar
     swww
-    rofi
-    dunst
+    eww
     libnotify
     helix
     hyprpaper
@@ -40,7 +39,15 @@ in
     playerctl
     docker
     nerd-fonts.jetbrains-mono
-    btop];
+    btop
+    imagemagick
+    cava
+    neofetch
+    tty-clock
+    pipes
+    fortune
+    lm_sensors
+    nvtopPackages.nvidia];
   
   home.sessionPath = [
     "$HOME/.npm-global/bin"
@@ -93,6 +100,134 @@ in
   };
 };
 
+  programs.rofi = {
+    enable = true;
+    extraConfig = {
+      modi = "drun,run,window";
+      show-icons = true;
+      drun-display-format = "{name}";
+      disable-history = false;
+      hide-scrollbar = true;
+      display-drun = "   Apps";
+      display-run = "   Run";
+      display-window = " 﩯  Window";
+    };
+  };
+
+  home.file.".config/rofi/theme.rasi".text = ''
+    * {
+      bg: ${palette.bg_alt};
+      bg-alt: ${palette.bg};
+      fg: ${palette.fg};
+      accent: ${palette.accent};
+      accent2: ${palette.accent2};
+
+      background-color: transparent;
+      text-color: @fg;
+      font: "JetBrainsMono Nerd Font 12";
+    }
+
+    window {
+      transparency: "real";
+      background-color: @bg;
+      border: 2px solid;
+      border-color: @accent;
+      border-radius: 15px;
+      width: 600px;
+      padding: 20px;
+    }
+
+    mainbox {
+      children: [inputbar, listview];
+      spacing: 15px;
+    }
+
+    inputbar {
+      background-color: @bg-alt;
+      border: 2px solid @accent;
+      border-radius: 10px;
+      padding: 10px;
+      children: [prompt, entry];
+    }
+
+    prompt {
+      text-color: @accent;
+      padding: 0 10px 0 0;
+    }
+
+    entry {
+      placeholder: "Search...";
+      placeholder-color: @fg;
+    }
+
+    listview {
+      lines: 8;
+      scrollbar: false;
+    }
+
+    element {
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    element selected {
+      background-color: @accent;
+      text-color: @bg;
+    }
+
+    element-icon {
+      size: 24px;
+      margin: 0 10px 0 0;
+    }
+  '';
+
+  services.dunst = {
+    enable = true;
+    settings = {
+      global = {
+        monitor = 0;
+        follow = "mouse";
+        width = 350;
+        offset = "10x45";
+        origin = "top-right";
+        padding = 20;
+        horizontal_padding = 20;
+        frame_width = 3;
+        corner_radius = 12;
+        font = "JetBrainsMono Nerd Font 11";
+        format = "<b>「%s」</b>\\n%b";
+        icon_position = "left";
+        max_icon_size = 64;
+        show_indicators = false;
+        separator_color = "frame";
+        separator_height = 2;
+      };
+
+      urgency_low = {
+        background = "${palette.bg_alt}";
+        foreground = "${palette.fg}";
+        frame_color = "${palette.muted}";
+        timeout = 5;
+        format = "<b>Sign「%s」</b>\\n%b";
+      };
+
+      urgency_normal = {
+        background = "${palette.bg_alt}";
+        foreground = "${palette.fg}";
+        frame_color = "${palette.accent}";
+        timeout = 8;
+        format = "<b>★ Spell Card「%s」</b>\\n%b";
+      };
+
+      urgency_critical = {
+        background = "${palette.bg_alt}";
+        foreground = "${palette.red}";
+        frame_color = "${palette.red}";
+        timeout = 0;
+        format = "<b>♦ Last Word「%s」</b>\\n%b";
+      };
+    };
+  };
 
   programs.zathura = {
     enable = true;
@@ -121,7 +256,7 @@ in
 
     extraConfig = ''
       # --- RICE LAYOUT RULES (Forced via extraConfig) ---
-      
+
       # LEFT
       windowrulev2 = float,initialClass:^(rice-left)$
       windowrulev2 = size 20% 90%,initialClass:^(rice-left)$
@@ -133,6 +268,44 @@ in
       windowrulev2 = size 20% 90%,class:^(rice-right)$
       windowrulev2 = move 79% 5%,class:^(rice-right)$
       windowrulev2 = opacity 0.8,class:^(rice-right)$
+
+      # --- WORKSPACE 1 DASHBOARD (Option C Layout) ---
+      # Neofetch (top-left, smaller)
+      windowrulev2 = workspace 1,class:^(neofetch-rice)$
+      windowrulev2 = opacity 0.85,class:^(neofetch-rice)$
+
+      # btop (top-right, larger)
+      windowrulev2 = workspace 1,class:^(btop-rice)$
+      windowrulev2 = opacity 0.9,class:^(btop-rice)$
+
+      # CAVA (bottom-left)
+      windowrulev2 = workspace 1,class:^(cava-rice)$
+      windowrulev2 = opacity 0.85,class:^(cava-rice)$
+
+      # System Stats (bottom-right)
+      windowrulev2 = workspace 1,class:^(stats-rice)$
+      windowrulev2 = opacity 0.9,class:^(stats-rice)$
+
+      # --- WORKSPACE 2 INFO DASHBOARD ---
+      # tty-clock
+      windowrulev2 = workspace 2,class:^(clock-rice)$
+      windowrulev2 = opacity 0.9,class:^(clock-rice)$
+
+      # Weather
+      windowrulev2 = workspace 2,class:^(weather-rice)$
+      windowrulev2 = opacity 0.9,class:^(weather-rice)$
+
+      # Fortune
+      windowrulev2 = workspace 2,class:^(fortune-rice)$
+      windowrulev2 = opacity 0.9,class:^(fortune-rice)$
+
+      # Journal
+      windowrulev2 = workspace 2,class:^(journal-rice)$
+      windowrulev2 = opacity 0.9,class:^(journal-rice)$
+
+      # Git Status
+      windowrulev2 = workspace 2,class:^(git-rice)$
+      windowrulev2 = opacity 0.9,class:^(git-rice)$
     '';
 
 
@@ -143,7 +316,8 @@ in
       exec-once = [
         "hyprlock"
         "waybar"
-
+        "eww daemon"
+        "~/.config/scripts/startup-rice.sh"
       ];
       windowrulev2 = [
       "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"];  
@@ -168,9 +342,10 @@ in
         rounding = 10;
         blur = {
           enabled = true;
-          size = 3;
-          passes = 1;
+          size = 6;
+          passes = 2;
           new_optimizations = true;
+          vibrancy = 0.2;
         };
         shadow = {
           enabled = true;
@@ -205,6 +380,7 @@ in
         "$mainMod, C, killactive,"
         "$mainMod, M, exit,"
         "$mainMod, V, togglefloating,"
+        "$mainMod, F, fullscreen,"
         "$mainMod, R, exec, rofi -show drun"
         "$mainMod, P, pseudo,"
         "$mainMod, J, togglesplit,"
@@ -216,6 +392,15 @@ in
         ", Print, exec, grimblast copy area"
         "ALT, Tab, cyclenext"
         "ALT SHIFT, Tab, cyclenext, prev"
+
+        # Media controls
+        ", XF86AudioPlay, exec, playerctl play-pause"
+        ", XF86AudioNext, exec, playerctl next"
+        ", XF86AudioPrev, exec, playerctl previous"
+        "$mainMod, F10, exec, playerctl play-pause"
+        "$mainMod, F11, exec, playerctl previous"
+        "$mainMod, F12, exec, playerctl next"
+        "$mainMod SHIFT, M, exec, ~/.config/eww/scripts/toggle-media-dashboard.sh"
       ] ++ (
         builtins.concatLists (builtins.genList (
             i: let 
@@ -302,19 +487,24 @@ in
 
       input-field = [
         {
-          size = "250, 50";
-          position = "0, -80";
+          size = "320, 50";
+          position = "0, -120";
           monitor = "";
           dots_center = true;
           fade_on_empty = false;
-          hide_input = true;
-          font_color = "rgb(${c palette.fg})";
-          inner_color = "rgb(${c palette.bg})";
+          hide_input = false;
+          dots_size = 0.3;
+          dots_spacing = 0.4;
+          font_color = "rgb(${c palette.accent2})";
+          inner_color = "rgba(15, 17, 26, 0.6)";
           outer_color = "rgb(${c palette.accent})";
-          outline_thickness = 2;
-          placeholder_text = "<i>...enter the void...</i>";
-          shadow_passes = 2;
-          rounding = 10;
+          check_color = "rgb(${c palette.accent2})";
+          fail_color = "rgb(${c palette.red})";
+          outline_thickness = 4;
+          placeholder_text = "";
+          shadow_passes = 4;
+          rounding = 25;
+          capslock_color = "rgb(${c palette.accent2})";
         }
       ];
 
@@ -419,12 +609,12 @@ in
 
         modules-left = [ "hyprland/workspaces" "hyprland/window" ];
         modules-center = [ "clock" ];
-        modules-right = [ 
-          "group/music"   # <--- The expandable music module
-          "pulseaudio" 
-          "network" 
-          "battery" 
-          "tray" 
+        modules-right = [
+          "custom/music"
+          "pulseaudio"
+          "network"
+          "battery"
+          "tray"
         ];
 
         # -------------------------------------------------------------------------
@@ -458,36 +648,15 @@ in
           format-alt = "{:%Y-%m-%d}";
         };
 
-        # --- EXPANDABLE MUSIC GROUP ---
-        "group/music" = {
-          orientation = "horizontal";
-          drawer = {
-            transition-duration = 500;
-            children-class = "not-power";
-            transition-left-to-right = false;
-          };
-          modules = [
-            "custom/music-icon" # The icon always visible
-            "mpris"             # The player controls (hidden until hovered)
-          ];
-        };
-
-        "custom/music-icon" = {
-          format = " ";
-          tooltip = false;
-        };
-
-        "mpris" = {
-          format = "{player_icon} {dynamic}";
-          format-paused = "{status_icon} <i>{dynamic}</i>";
-          player-icons = {
-            default = "▶";
-            mpv = "🎵";
-          };
-          status-icons = {
-            paused = "⏸";
-          };
-          # ignored-players = ["firefox"]; # Optional: ignore browser audio
+        # --- MUSIC MODULE (clicks to toggle EWW dashboard) ---
+        "custom/music" = {
+          format = " {}";
+          exec = "playerctl metadata --format '{{ artist }} - {{ title }}' 2>/dev/null || echo 'No media'";
+          exec-if = "playerctl status 2>/dev/null";
+          interval = 2;
+          on-click = "~/.config/eww/scripts/toggle-media-dashboard.sh";
+          max-length = 40;
+          tooltip = true;
         };
         
         "pulseaudio" = {
@@ -540,24 +709,32 @@ in
       }
 
       .modules-left, .modules-center, .modules-right {
-        background: ${palette.bg_alt};
-        border: 1px solid ${palette.fg};
+        background: rgba(26, 29, 41, 0.6);
+        border: 1px solid rgba(169, 177, 214, 0.3);
         border-radius: 10px;
         padding-left: 10px;
         padding-right: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
       #workspaces button {
         padding: 0 5px;
         color: ${palette.muted};
+        transition: all 0.3s ease;
       }
 
       #workspaces button.active {
         color: ${palette.accent};
+        text-shadow: 0 0 10px ${palette.accent};
       }
 
       #workspaces button.urgent {
         color: ${palette.red};
+        text-shadow: 0 0 10px ${palette.red};
+      }
+
+      #workspaces button:hover {
+        color: ${palette.accent2};
       }
 
       #clock,
@@ -580,17 +757,13 @@ in
         color: ${palette.fg};
       }
 
-      #custom-music-icon {
+      #custom-music {
         color: ${palette.accent};
-        padding-right: 10px;
-      }
-      
-      #mpris {
-        color: ${palette.fg};
         padding: 0 10px;
-        background: ${palette.bg};
-        border-radius: 15px;
-        margin: 3px 0;
+      }
+
+      #custom-music:hover {
+        color: ${palette.accent2};
       }
 
       #battery.charging, #battery.plugged {
@@ -613,4 +786,300 @@ in
         animation-direction: alternate;
       }
     '';  };
+
+  # ============== EWW MEDIA DASHBOARD ==============
+  home.file.".config/eww/eww.yuck".text = ''
+    (defwindow media-dashboard
+      :monitor 0
+      :geometry (geometry
+        :x "10px"
+        :y "45px"
+        :width "400px"
+        :height "500px"
+        :anchor "top right")
+      :stacking "overlay"
+      :windowtype "normal"
+      (media-widget))
+
+    (deflisten music_status "playerctl --follow status 2>/dev/null || echo 'Stopped'")
+    (deflisten music_title "playerctl --follow metadata --format '{{ title }}' 2>/dev/null || echo 'No Title'")
+    (deflisten music_artist "playerctl --follow metadata --format '{{ artist }}' 2>/dev/null || echo 'No Artist'")
+    (deflisten music_album "playerctl --follow metadata --format '{{ album }}' 2>/dev/null || echo '''")
+    (deflisten music_arturl "playerctl --follow metadata --format '{{ mpris:artUrl }}' 2>/dev/null || echo '''")
+    (defpoll music_position :interval "1s" :initial-value "0" "playerctl position 2>/dev/null | cut -d. -f1 | grep -E '^[0-9]+$' || echo 0")
+    (defpoll music_length :interval "1s" :initial-value "0:00" "playerctl metadata --format '{{ duration(mpris:length) }}' 2>/dev/null | grep -v '^$' || echo '0:00'")
+    (defpoll volume :interval "1s" :initial-value "50" "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{if($2) print int($2*100); else print 50}'")
+    (defpoll power_level :interval "2s" :initial-value "4.00" "awk '{printf \"%.2f\", $1/100*4}' /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo 4.00")
+    (defpoll cpu_usage :interval "2s" :initial-value "0" "top -bn1 | grep Cpu | awk '{print int($2)}'")
+    (defpoll music_easter_egg :interval "2s" :initial-value "♥ Subconscious Silence ♥" "~/.config/eww/scripts/music-easter-egg.sh")
+
+    (defwidget media-widget []
+      (box :class "media-dashboard" :orientation "v" :space-evenly false
+        (box :class "album-art-container" :halign "center"
+          (image :path {music_arturl != "" ? music_arturl : "/home/nyam/.config/eww/assets/music-note.png"}
+                 :image-width 300
+                 :image-height 300
+                 :class "album-art"))
+
+        (box :class "easter-egg-banner" :halign "center"
+          (label :class "easter-egg-text" :text music_easter_egg))
+
+        (box :class "track-info" :orientation "v" :space-evenly false :halign "center"
+          (label :class "track-title" :text {music_title} :limit-width 35)
+          (label :class "track-artist" :text {music_artist} :limit-width 35)
+          (label :class "track-album" :text {music_album} :limit-width 35))
+
+        (box :class "progress-section" :orientation "v" :space-evenly false
+          (scale :class "progress-bar"
+                 :value {music_position}
+                 :max 300
+                 :onchange "playerctl position {}")
+          (box :class "progress-time" :space-evenly true
+            (label :text {music_position} :halign "start")
+            (label :text {music_length} :halign "end")))
+
+        (box :class "controls" :halign "center" :spacing 20
+          (button :class "control-button" :onclick "playerctl previous" "⏮")
+          (button :class "control-button play-pause" :onclick "playerctl play-pause"
+            {music_status == "Playing" ? "⏸" : "▶"})
+          (button :class "control-button" :onclick "playerctl next" "⏭"))
+
+        (box :class "volume-section" :orientation "v" :space-evenly false
+          (label :class "volume-label" :text "Volume: ''${volume}%")
+          (scale :class "volume-slider"
+                 :value volume
+                 :max 100
+                 :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%"))
+
+        (box :class "touhou-stats" :orientation "h" :space-evenly true :spacing 10
+          (box :class "power-display" :orientation "v"
+            (label :class "stat-label" :text "⚡ Power")
+            (label :class "stat-value" :text "''${power_level} / 4.00"))
+          (box :class "spell-display" :orientation "v"
+            (label :class "stat-label" :text "★ Graze")
+            (label :class "stat-value" :text "''${cpu_usage}%")))))
+  '';
+
+  home.file.".config/eww/eww.scss".text = ''
+    * {
+      all: unset;
+      font-family: "JetBrainsMono Nerd Font";
+    }
+
+    .media-dashboard {
+      background-color: rgba(26, 29, 41, 0.75);
+      border: 2px solid rgba(122, 162, 247, 0.5);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .album-art-container {
+      margin-bottom: 15px;
+    }
+
+    .album-art {
+      border-radius: 10px;
+      background-color: ${palette.bg};
+    }
+
+    .easter-egg-banner {
+      margin: 10px 0;
+      padding: 8px 15px;
+      background: linear-gradient(90deg, transparent, rgba(122, 162, 247, 0.2), transparent);
+      border-top: 1px solid rgba(122, 162, 247, 0.3);
+      border-bottom: 1px solid rgba(122, 162, 247, 0.3);
+    }
+
+    .easter-egg-text {
+      color: ${palette.accent2};
+      font-size: 13px;
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    .track-info {
+      margin-bottom: 20px;
+    }
+
+    .track-title {
+      color: ${palette.fg};
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .track-artist {
+      color: ${palette.accent};
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+
+    .track-album {
+      color: ${palette.muted};
+      font-size: 14px;
+    }
+
+    .progress-section {
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      background-color: rgba(15, 17, 26, 0.5);
+      border-radius: 10px;
+      min-height: 8px;
+    }
+
+    .progress-bar trough {
+      background-color: rgba(15, 17, 26, 0.5);
+      border-radius: 10px;
+      min-height: 8px;
+    }
+
+    .progress-bar highlight {
+      background: linear-gradient(90deg, ${palette.accent}, ${palette.accent2});
+      border-radius: 10px;
+    }
+
+    .progress-bar slider {
+      background-color: ${palette.accent};
+      border-radius: 50%;
+      min-width: 16px;
+      min-height: 16px;
+    }
+
+    .progress-time {
+      color: ${palette.muted};
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .control-button {
+      background-color: rgba(15, 17, 26, 0.6);
+      border: 2px solid rgba(122, 162, 247, 0.7);
+      border-radius: 50%;
+      color: ${palette.accent};
+      font-size: 24px;
+      min-width: 60px;
+      min-height: 60px;
+      transition: all 0.2s;
+    }
+
+    .control-button:hover {
+      background-color: rgba(122, 162, 247, 0.8);
+      color: ${palette.bg};
+    }
+
+    .control-button.play-pause {
+      min-width: 70px;
+      min-height: 70px;
+      font-size: 28px;
+      border-width: 3px;
+    }
+
+    .volume-section {
+      margin-top: 10px;
+    }
+
+    .volume-label {
+      color: ${palette.fg};
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .volume-slider {
+      background-color: rgba(15, 17, 26, 0.5);
+      border-radius: 10px;
+      min-height: 8px;
+    }
+
+    .volume-slider trough {
+      background-color: rgba(15, 17, 26, 0.5);
+      border-radius: 10px;
+      min-height: 8px;
+    }
+
+    .volume-slider highlight {
+      background-color: ${palette.accent};
+      border-radius: 10px;
+    }
+
+    .volume-slider slider {
+      background-color: ${palette.accent2};
+      border-radius: 50%;
+      min-width: 16px;
+      min-height: 16px;
+    }
+
+    .touhou-stats {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: rgba(15, 17, 26, 0.4);
+      border-radius: 10px;
+      border: 1px solid rgba(122, 162, 247, 0.3);
+    }
+
+    .power-display, .spell-display {
+      padding: 5px 10px;
+    }
+
+    .stat-label {
+      color: ${palette.accent2};
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      color: ${palette.fg};
+      font-size: 16px;
+      font-weight: bold;
+    }
+  '';
+
+  home.file.".config/eww/scripts/toggle-media-dashboard.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      if eww active-windows | grep -q "media-dashboard"; then
+        eww close media-dashboard
+      else
+        eww open media-dashboard
+      fi
+    '';
+    executable = true;
+  };
+
+  home.file.".config/eww/scripts/music-easter-egg.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Music player easter eggs - Touhou style
+      status=$(playerctl status 2>/dev/null)
+      title=$(playerctl metadata --format '{{ title }}' 2>/dev/null)
+
+      case "$status" in
+        "Playing")
+          # Check for Touhou references in title
+          if echo "$title" | grep -iq "touhou\|necrofantasia\|bad apple\|un owen\|septette"; then
+            echo "♫ Spell Card Active ♫"
+          else
+            echo "♪ Now Playing ♪"
+          fi
+          ;;
+        "Paused")
+          echo "⊗ Rose of May - Closed ⊗"
+          ;;
+        *)
+          echo "♥ Subconscious Silence ♥"
+          ;;
+      esac
+    '';
+    executable = true;
+  };
+
+  # Create placeholder for music note fallback image (will be generated)
+  home.file.".config/eww/assets/.keep".text = "";
  }
