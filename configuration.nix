@@ -161,7 +161,10 @@
   grimblast
   zathura
   xclip
+  zoom-us
 ];
+
+
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
   ];

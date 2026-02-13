@@ -5,7 +5,7 @@ let
 
   palette = {
     bg      = "#0f111a";
-    bg_rgba = "rgba(15,17,26,55)"; # Deepest blue-black (Background)
+    bg_rgba = "rgba(15,17,26,00)"; # Deepest blue-black (Background)
     bg_alt  = "#1a1d29";   # Slightly lighter (Panels/Bars)
     fg      = "#a9b1d6";  
     fg_rgba = "rgba(169, 177, 214, 00)"; # Pale grey-blue (Text)
@@ -312,12 +312,20 @@ in
     settings = {
 
 
-      monitor = ", 2560x1440@144, auto, 1";
+      # Monitor configuration - all at max resolution and refresh rate
+      monitor = [
+        "DP-1, 1920x1080@60, 0x0, 1"             # UGD monitor (left)
+        "eDP-1, 2560x1600@240, 1920x0, 1"        # Laptop display (middle)
+        "HDMI-A-3, 2560x1440@144, 4480x0, 1"     # Samsung Odyssey G5 (right)
+      ];
+
       exec-once = [
         "hyprlock"
         "waybar"
         "eww daemon"
         "~/.config/scripts/startup-rice.sh"
+        # Audio verification: test default sink
+        "notify-send '🔊 Audio Status' \"Default sink: $(wpctl get-volume @DEFAULT_AUDIO_SINK@)\""
       ];
       windowrulev2 = [
       "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"];  
@@ -371,8 +379,9 @@ in
       "$mainMod" = "SUPER";
       
       binde = [
-        ", F2, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"
-        ", F3, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"
+        # Audio volume controls with visual feedback
+        ", F2, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%- && notify-send '🔊 Volume' \"$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)\"%\"}')\" -t 1000"
+        ", F3, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+ && notify-send '🔊 Volume' \"$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)\"%\"}')\" -t 1000"
       ];
 
       bind = [
@@ -401,6 +410,10 @@ in
         "$mainMod, F11, exec, playerctl previous"
         "$mainMod, F12, exec, playerctl next"
         "$mainMod SHIFT, M, exec, ~/.config/eww/scripts/toggle-media-dashboard.sh"
+
+        # Audio device verification and testing
+        "$mainMod SHIFT, A, exec, notify-send '🔊 Audio Test' 'Playing test sound...' && wpctl set-volume @DEFAULT_AUDIO_SINK@ 50% && speaker-test -t sine -f 1000 -l 1 & sleep 0.3 && pkill speaker-test"
+        "$mainMod CTRL, A, exec, notify-send '🎵 Audio Devices' \"$(wpctl status | grep -A 5 'Audio' | head -n 10)\" -t 5000"
       ] ++ (
         builtins.concatLists (builtins.genList (
             i: let 
@@ -421,17 +434,16 @@ in
     settings = {
       ipc = "on";
       splash = false;
-      
+
       preload = [
         "${wallpaper}"
       ];
 
+      # Shared wallpaper across all 3 monitors
       wallpaper = [
-        {
-        monitor = "eDP-1";
-        path = "${wallpaper}";
-        fit_mode = "cover";
-        }
+        "eDP-1, ${wallpaper}"      # Laptop display
+        "DP-1, ${wallpaper}"        # UGD monitor
+        "HDMI-A-3, ${wallpaper}"    # Samsung Odyssey G5
       ];
     };
   };
