@@ -24,7 +24,11 @@ in
 {
   home.username = "nyam";
   home.homeDirectory = "/home/nyam";
-  home.stateVersion = "24.05"; 
+  home.stateVersion = "24.05";
+
+  home.sessionVariables = {
+    _JAVA_AWT_WM_NONREPARENTING = "1";
+    };
 
   home.packages = with pkgs; [
     kitty
@@ -35,6 +39,7 @@ in
     helix
     hyprpaper
     wireplumber
+    pavucontrol
     zathura
     playerctl
     docker
@@ -414,6 +419,7 @@ in
         # Audio device verification and testing
         "$mainMod SHIFT, A, exec, notify-send '🔊 Audio Test' 'Playing test sound...' && wpctl set-volume @DEFAULT_AUDIO_SINK@ 50% && speaker-test -t sine -f 1000 -l 1 & sleep 0.3 && pkill speaker-test"
         "$mainMod CTRL, A, exec, notify-send '🎵 Audio Devices' \"$(wpctl status | grep -A 5 'Audio' | head -n 10)\" -t 5000"
+        "$mainMod ALT, A, exec, ~/.config/scripts/audio-switcher.sh"
       ] ++ (
         builtins.concatLists (builtins.genList (
             i: let 
@@ -1094,4 +1100,49 @@ in
 
   # Create placeholder for music note fallback image (will be generated)
   home.file.".config/eww/assets/.keep".text = "";
+
+  # Audio device switcher script
+  home.file.".config/scripts/audio-switcher.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Audio Device Switcher using Rofi
+
+      # Get list of audio sinks with their IDs and names
+      sinks=$(wpctl status | grep -A 50 "Sinks:" | grep -E "^\s+[0-9]+\." | head -n 20)
+
+      # Format for rofi: "ID: Device Name"
+      options=""
+      declare -A sink_ids
+
+      while IFS= read -r line; do
+        # Extract ID and name
+        id=$(echo "$line" | grep -oP '^\s+\K[0-9]+')
+        name=$(echo "$line" | sed 's/^[^.]*\. //' | sed 's/\[.*\]//' | xargs)
+
+        # Check if this is the current default (marked with *)
+        if echo "$line" | grep -q "\*"; then
+          options+="★ $name\n"
+          sink_ids["★ $name"]=$id
+        else
+          options+="$name\n"
+          sink_ids["$name"]=$id
+        fi
+      done <<< "$sinks"
+
+      # Show rofi menu
+      chosen=$(echo -e "$options" | rofi -dmenu -i -p "🔊 Select Audio Device" -theme ~/.config/rofi/theme.rasi)
+
+      # If user selected something, change the audio device
+      if [ -n "$chosen" ]; then
+        device_id="''${sink_ids[$chosen]}"
+        if [ -n "$device_id" ]; then
+          wpctl set-default "$device_id"
+          # Clean the star if present
+          device_name=$(echo "$chosen" | sed 's/^★ //')
+          notify-send "🔊 Audio Device Changed" "Now using: $device_name" -t 3000
+        fi
+      fi
+    '';
+    executable = true;
+  };
  }
