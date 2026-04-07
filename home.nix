@@ -28,7 +28,12 @@ in
 
   home.sessionVariables = {
     _JAVA_AWT_WM_NONREPARENTING = "1";
+
+    
+
     };
+
+
 
   home.packages = with pkgs; [
     kitty
@@ -52,10 +57,17 @@ in
     pipes
     fortune
     lm_sensors
-    nvtopPackages.nvidia];
+    nvtopPackages.nvidia
+    opencode
+    zed-editor
+    zig
+    claude-code
+    claude-monitor
+    ];
   
   home.sessionPath = [
     "$HOME/.npm-global/bin"
+    "$HOME/.local/bin"
   ];
   
 
@@ -85,8 +97,10 @@ in
         edit = "nvim ~/dotfiles";
         update = "cd ~/dotfiles && git add . && sudo nixos-rebuild switch --flake . && cd ~";
         split = "hyprctl dispatch workspace 9 & kitty --class rice-left & kitty --class rice-right &";
-
+        claude = "claude --dangerously-skip-permissions";
       };
+
+
   };
  #===================================================================================================================================================================================================   
 
@@ -329,11 +343,13 @@ in
         "waybar"
         "eww daemon"
         "~/.config/scripts/startup-rice.sh"
-        # Audio verification: test default sink
         "notify-send '🔊 Audio Status' \"Default sink: $(wpctl get-volume @DEFAULT_AUDIO_SINK@)\""
       ];
       windowrulev2 = [
-      "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"];  
+      "opacity 0.80 0.80 override,class:^(org.pwmt.zathura)$"
+      "opacity 0.90 0.90 override,class:^(dev.zed.Zed)$"
+      "opacity 0.90 0.90 override,class:^(zed)$"
+      ];  
       general = {
         gaps_in = 4;
         gaps_out = 10;
@@ -398,6 +414,7 @@ in
         "$mainMod, R, exec, rofi -show drun"
         "$mainMod, P, pseudo,"
         "$mainMod, J, togglesplit,"
+        "$mainMod, E, exec, zeditor"
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"
@@ -435,28 +452,416 @@ in
   };
 #================================================================================================================================================================================================
       
-  services.hyprpaper = {
-    enable = true;
-    settings = {
-      ipc = "on";
-      splash = false;
-
-      preload = [
-        "${wallpaper}"
-      ];
-
-      # Shared wallpaper across all 3 monitors
-      wallpaper = [
-        "eDP-1, ${wallpaper}"      # Laptop display
-        "DP-1, ${wallpaper}"        # UGD monitor
-        "HDMI-A-3, ${wallpaper}"    # Samsung Odyssey G5
-      ];
-    };
-  };
+  services.hyprpaper.enable = true;
+  
+  home.file.".config/hypr/hyprpaper.conf".text = ''
+    ipc=on
+    splash=false
+    preload=${wallpaper}
+    wallpaper=DP-1,${wallpaper}
+    wallpaper=eDP-1,${wallpaper}
+    wallpaper=HDMI-A-3,${wallpaper}
+  '';
 
   programs.home-manager.enable = true;
   programs.gemini-cli.enable = true; 
   programs.gemini-cli.defaultModel = "gemini-2.5-pro";
+
+  xdg.configFile."zed/settings.json".text = builtins.toJSON {
+    features = {
+      edit_prediction_provider = "copilot";
+    };
+    buffer_font_family = "JetBrainsMono Nerd Font";
+    buffer_font_size = 14;
+    buffer_line_height = "comfortable";
+    ui_font_family = "JetBrainsMono Nerd Font";
+    ui_font_size = 13;
+    theme = {
+      mode = "dark";
+      light = "One Light";
+      dark = "One Dark";
+    };
+    vim_mode = true;
+    vim = {
+      use_system_clipboard = "always";
+      use_multiline_find = true;
+      toggle_relative_line_numbers = true;
+    };
+    relative_line_numbers = true;
+    scroll_beyond_last_line = "one_page";
+    tab_size = 2;
+    hard_tabs = false;
+    soft_wrap = "preferred_line_length";
+    preferred_line_length = 100;
+    autosave = "on_focus_change";
+    format_on_save = "on";
+    formatter = "auto";
+    tab_bar = {
+      show = true;
+      show_nav_history_buttons = true;
+    };
+    status_bar = {
+      show = true;
+    };
+    toolbar = {
+      breadcrumbs = true;
+      quick_actions = true;
+      selections_menu = true;
+    };
+    git = {
+      enabled = true;
+      auto_fetch = true;
+      inline_blame = {
+        enabled = true;
+        delay_ms = 500;
+      };
+    };
+    languages = {
+      "TypeScript" = {
+        language_servers = [ "typescript-language-server" "eslint" ];
+        formatter = "prettier";
+        code_actions_on_format = {
+          "source.fixAll.eslint" = true;
+          "source.organizeImports" = true;
+        };
+      };
+      "JavaScript" = {
+        language_servers = [ "typescript-language-server" "eslint" ];
+        formatter = "prettier";
+        code_actions_on_format = {
+          "source.fixAll.eslint" = true;
+        };
+      };
+      "TSX" = {
+        language_servers = [ "typescript-language-server" "eslint" ];
+        formatter = "prettier";
+      };
+      "JSON" = {
+        formatter = "prettier";
+      };
+      "Python" = {
+        language_servers = [ "pyright" "ruff" ];
+        formatter = {
+          language_server = {
+            name = "ruff";
+          };
+        };
+      };
+      "Rust" = {
+        language_servers = [ "rust-analyzer" ];
+      };
+      "Java" = {
+        language_servers = [ "jdtls" ];
+      };
+      "Nix" = {
+        language_servers = [ "nil" ];
+        formatter = "nixfmt";
+      };
+      "Zig" = {
+        language_servers = [ "zls" ];
+        formatter = {
+          external = {
+            command = "zig";
+            arguments = [ "fmt" "--stdin" ];
+          };
+        };
+      };
+    };
+    lsp = {
+      typescript-language-server = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      eslint = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      pyright = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      ruff = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      rust-analyzer = {
+        binary = {
+          path_lookup = true;
+        };
+        initialization_options = {
+          check = {
+            command = "clippy";
+          };
+        };
+      };
+      jdtls = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      nil = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+      zls = {
+        binary = {
+          path_lookup = true;
+        };
+      };
+    };
+    assistant = {
+      default_model = {
+        provider = "anthropic";
+        model = "claude-sonnet-4";
+      };
+      version = "2";
+      button = true;
+    };
+    language_models = {
+      anthropic = {
+        version = "2";
+      };
+      openai = {
+        version = "2";
+      };
+      ollama = {};
+    };
+    collaboration_panel = {
+      button = false;
+    };
+    chat_panel = {
+      button = true;
+      default_width = 300;
+    };
+    notification_panel = {
+      button = true;
+    };
+    project_panel = {
+      button = true;
+      default_width = 240;
+      dock = "left";
+      entry_spacing = "comfortable";
+      file_icons = true;
+      folder_icons = true;
+      git_status = true;
+      indent_size = 16;
+      indent_guides = {
+        show = "always";
+      };
+      scrollbar = {
+        show = "auto";
+      };
+      show = true;
+    };
+    outline_panel = {
+      button = true;
+      default_width = 240;
+      dock = "left";
+      file_icons = true;
+      folder_icons = true;
+      git_status = true;
+      indent_size = 16;
+      scrollbar = {
+        show = "auto";
+      };
+      show = false;
+    };
+    terminal = {
+      font_family = "JetBrainsMono Nerd Font";
+      font_size = 13;
+      line_height = "comfortable";
+      shell = {
+        program = "kitty";
+      };
+      working_directory = "current_project_directory";
+    };
+    telemetry = {
+      metrics = false;
+      diagnostics = false;
+    };
+    base_keymap = "VSCode";
+    binds = {
+      "ctrl-t" = "project_search::ToggleFocus";
+      "ctrl-shift-f" = "project_search::ToggleFocus";
+      "ctrl-p" = "file_finder::Toggle";
+      "ctrl-shift-p" = "command_palette::Toggle";
+      "ctrl-b" = "workspace::ToggleLeftDock";
+      "ctrl-j" = "editor::ScrollDown";
+      "ctrl-k" = "editor::ScrollUp";
+      "ctrl-`" = "workspace::ToggleBottomDock";
+      "ctrl-shift-t" = "pane::ReopenClosedItem";
+      "ctrl-tab" = "pane::ActivateNextItem";
+      "ctrl-shift-tab" = "pane::ActivatePrevItem";
+      "ctrl-\\" = "editor::ToggleStagedDiffHunks";
+    };
+  };
+
+  xdg.configFile."zed/keymap.json".text = builtins.toJSON [
+    {
+      context = "Editor";
+      bindings = {
+        "j" = "vim::Down";
+        "k" = "vim::Up";
+        "h" = "vim::Left";
+        "l" = "vim::Right";
+        "w" = "vim::NextWordStart";
+        "b" = "vim::PreviousWordStart";
+        "e" = "vim::NextWordEnd";
+        "0" = "vim::LineStart";
+        "^" = "vim::FirstNonWhitespace";
+        "$" = "vim::LineEnd";
+        "g g" = "vim::StartOfDocument";
+        "shift-g" = "vim::EndOfDocument";
+        "ctrl-d" = "vim::ScrollDown";
+        "ctrl-u" = "vim::ScrollUp";
+        "d" = "vim::Delete";
+        "c" = "vim::Change";
+        "y" = "vim::Yank";
+        "p" = "vim::Paste";
+        "u" = "vim::Undo";
+        "ctrl-r" = "vim::Redo";
+        "x" = "vim::DeleteRight";
+        "shift-x" = "vim::DeleteLeft";
+        "r" = "vim::Replace";
+        "i" = "vim::InsertBefore";
+        "shift-i" = "vim::InsertFirstNonWhitespace";
+        "a" = "vim::InsertAfter";
+        "shift-a" = "vim::InsertEndOfLine";
+        "o" = "vim::InsertLineBelow";
+        "shift-o" = "vim::InsertLineAbove";
+        "v" = "vim::ToggleVisual";
+        "shift-v" = "vim::ToggleVisualLine";
+        "ctrl-v" = "vim::ToggleVisualBlock";
+        "/" = "vim::Search";
+        "?" = "vim::SearchBackward";
+        "n" = "vim::SearchNext";
+        "shift-n" = "vim::SearchPrev";
+        "*" = "vim::SearchSelectionForward";
+        "#" = "vim::SearchSelectionBackward";
+        "f" = "vim::FindChar";
+        "shift-f" = "vim::FindCharBackward";
+        ";" = "vim::RepeatFind";
+        "," = "vim::RepeatFindReversed";
+        "m" = "vim::Mark";
+        "'" = "vim::JumpToMark";
+        "`" = "vim::JumpToMarkExactColumn";
+        "s" = "vim::Substitute";
+        "shift-s" = "vim::SubstituteLine";
+        ">" = "vim::Indent";
+        "<" = "vim::Outdent";
+        "=" = "vim::AutoIndent";
+        "g u" = "vim::Lowercase";
+        "g shift-u" = "vim::Uppercase";
+        "~" = "vim::ToggleCase";
+        "escape" = "vim::SwitchToNormalMode";
+        "ctrl-[" = "vim::SwitchToNormalMode";
+        "z z" = "vim::ScrollCursorCenter";
+        "z t" = "vim::ScrollCursorTop";
+        "z b" = "vim::ScrollCursorBottom";
+        "shift-h" = "vim::WindowTop";
+        "shift-m" = "vim::WindowMiddle";
+        "shift-l" = "vim::WindowBottom";
+        "g d" = "vim::GoToDefinition";
+        "g shift-d" = "vim::GoToTypeDefinition";
+        "g r" = "vim::GoToReferences";
+        "g shift-i" = "vim::GoToImplementation";
+        "g h" = "vim::Hover";
+        "ctrl-]" = "vim::GoToDefinition";
+        "ctrl-o" = "vim::JumpBack";
+        "ctrl-i" = "vim::JumpForward";
+        "g w" = "editor::SelectLargerSyntaxNode";
+        "g shift-w" = "editor::SelectSmallerSyntaxNode";
+        "g c" = "editor::ToggleComments";
+        "g b" = "editor::ToggleGitBlame";
+        "space" = "vim::Leader";
+      };
+    }
+    {
+      context = "Editor && vim_mode == normal && !menu";
+      bindings = {
+        "space space" = "file_finder::Toggle";
+        "space f f" = "file_finder::Toggle";
+        "space f g" = "project_search::ToggleFocus";
+        "space f b" = "pane::ActivateNextItem";
+        "space f d" = "search::ToggleDock";
+        "space b b" = "pane::ActivateNextItem";
+        "space b d" = "pane::CloseActiveItem";
+        "space b n" = "pane::SplitRight";
+        "space g g" = "git::OpenLog";
+        "space g s" = "git::Stage";
+        "space g u" = "git::Unstage";
+        "space g c" = "git::Commit";
+        "space g p" = "git::Push";
+        "space g l" = "git::Pull";
+        "space l d" = "editor::GoToDefinition";
+        "space l t" = "editor::GoToTypeDefinition";
+        "space l r" = "editor::FindAllReferences";
+        "space l n" = "editor::Rename";
+        "space l a" = "editor::ToggleCodeActions";
+        "space l f" = "editor::Format";
+        "space l e" = "diagnostics::Deploy";
+        "space l x" = "editor::OpenExcerpts";
+        "space t t" = "workspace::NewCenterTerminal";
+        "space t f" = "terminal_panel::ToggleFocus";
+        "space s s" = "outline::Toggle";
+        "space s d" = "project_diagnostics::ToggleFocus";
+        "space c a" = "editor::ToggleCodeActions";
+        "space c r" = "editor::Rename";
+        "space c f" = "editor::Format";
+        "space ?" = "command_palette::Toggle";
+        "space w h" = "workspace::ActivatePaneLeft";
+        "space w l" = "workspace::ActivatePaneRight";
+        "space w k" = "workspace::ActivatePaneUp";
+        "space w j" = "workspace::ActivatePaneDown";
+        "space w s" = "pane::SplitRight";
+        "space w v" = "pane::SplitDown";
+        "space w c" = "pane::CloseActiveItem";
+        "space q q" = "zed::Quit";
+        "space q w" = "workspace::CloseWindow";
+      };
+    }
+    {
+      context = "Editor && vim_mode == visual";
+      bindings = {
+        "o" = "vim::OtherEnd";
+        "g c" = "editor::ToggleComments";
+        ">" = "vim::Indent";
+        "<" = "vim::Outdent";
+        "y" = "vim::Yank";
+        "d" = "vim::Delete";
+        "c" = "vim::Change";
+        "s" = "vim::Substitute";
+        "r" = "vim::Replace";
+      };
+    }
+    {
+      context = "Editor && vim_mode == insert";
+      bindings = {
+        "escape" = "vim::SwitchToNormalMode";
+        "ctrl-[" = "vim::SwitchToNormalMode";
+        "ctrl-c" = "vim::SwitchToNormalMode";
+      };
+    }
+    {
+      context = "Workspace";
+      bindings = {
+        "ctrl-1" = "workspace::ActivatePane1";
+        "ctrl-2" = "workspace::ActivatePane2";
+        "ctrl-3" = "workspace::ActivatePane3";
+        "ctrl-4" = "workspace::ActivatePane4";
+        "ctrl-5" = "workspace::ActivatePane5";
+        "ctrl-6" = "workspace::ActivatePane6";
+        "ctrl-7" = "workspace::ActivatePane7";
+        "ctrl-8" = "workspace::ActivatePane8";
+        "ctrl-9" = "workspace::ActivatePane9";
+      };
+    }
+  ];
   
   programs.git = {
     enable = true;

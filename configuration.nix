@@ -162,7 +162,21 @@
   zathura
   xclip
   zoom-us
-];
+  jdk21
+  maven
+  gradle
+  jdt-language-server
+  # Language servers and formatters for Zed
+  typescript-language-server
+  nodePackages.eslint
+  nodePackages.prettier
+  pyright
+  ruff
+  rust-analyzer
+  nil
+  nixfmt-classic
+  zls
+ ];
 
 
   fonts.packages = with pkgs; [
